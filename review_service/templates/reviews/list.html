@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <h1 class="my-4">Your Reviews</h1>
+    
+    <div class="d-flex justify-content-between mb-4">
+        <a href="{% url 'reviews:create' %}" class="btn btn-primary">
+            <i class="bi bi-plus-circle"></i> Add New Review
+        </a>
+        <span class="badge bg-secondary">
+            Total Reviews: {{ total_reviews }}
+        </span>
+    </div>
+    
+    {% if page_obj %}
+        <div class="list-group">
+            {% for review in page_obj %}
+                <div class="list-group-item list-group-item-action">
+                    <div class="d-flex w-100 justify-content-between">
+                        <h5 class="mb-1">
+                            Rating: 
+                            <span class="text-{% if review.sentiment == 'positive' %}success{% elif review.sentiment == 'negative' %}danger{% else %}warning{% endif %}">
+                                {{ review.get_rating_display }}
+                            </span>
+                        </h5>
+                        <small class="text-muted">{{ review.created_at|date:"M d, Y" }}</small>
+                    </div>
+                    <p class="mb-1">{{ review.text|truncatechars:200 }}</p>
+                    {% if review.location_name %}
+                        <small class="text-muted">
+                            <i class="bi bi-geo-alt"></i> {{ review.location_name }}
+                        </small>
+                    {% endif %}
+                    <div class="mt-2">
+                        <a href="{% url 'reviews:edit' review.pk %}" class="btn btn-sm btn-outline-secondary">
+                            <i class="bi bi-pencil"></i> Edit
+                        </a>
+                        <a href="{% url 'reviews:delete' review.pk %}" class="btn btn-sm btn-outline-danger">
+                            <i class="bi bi-trash"></i> Delete
+                        </a>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+        
+        <!-- Pagination -->
+        <nav class="mt-4">
+            <ul class="pagination">
+                {% if page_obj.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page=1">&laquo; First</a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a>
+                    </li>
+                {% endif %}
+                
+                <li class="page-item disabled">
+                    <span class="page-link">
+                        Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+                    </span>
+                </li>
+                
+                {% if page_obj.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}">Last &raquo;</a>
+                    </li>
+                {% endif %}
+            </ul>
+        </nav>
+    {% else %}
+        <div class="alert alert-info">
+            You haven't submitted any reviews yet. 
+            <a href="{% url 'reviews:create' %}" class="alert-link">Create your first review</a>.
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

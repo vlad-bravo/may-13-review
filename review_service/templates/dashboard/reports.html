@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Отправка отчетов</h1>
+
+<form method="post">
+    {% csrf_token %}
+    <p>
+        Нажмите кнопку ниже, чтобы отправить отчет в Telegram.
+    </p>
+    <button type="submit">Отправить отчет</button>
+</form>
+
+<div class="telegram-connect">
+    <h3>Подключить Telegram</h3>
+    <p>Для получения автоматических отчетов подключите Telegram:</p>
+    <a href="https://t.me/YourReviewBot" class="telegram-button">Подключить бота</a>
+</div>
+{% endblock %}

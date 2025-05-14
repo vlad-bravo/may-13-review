@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <h1 class="my-4">
+        {% if form.instance.pk %}Edit{% else %}Create{% endif %} Review
+    </h1>
+    
+    <form method="post" id="reviewForm">
+        {% csrf_token %}
+        
+        <div class="mb-3">
+            <label for="id_text" class="form-label">Your Review</label>
+            {{ form.text }}
+            {% if form.text.errors %}
+                <div class="invalid-feedback d-block">
+                    {{ form.text.errors }}
+                </div>
+            {% endif %}
+        </div>
+        
+        <div class="mb-3">
+            <label for="ratingSlider" class="form-label">
+                Rating: <span id="ratingValue">{{ form.rating.value|default:3 }}</span>/5
+            </label>
+            {{ form.rating }}
+        </div>
+        
+        <div class="mb-3">
+            <label for="locationInput" class="form-label">Location</label>
+            {{ form.location_name }}
+            <div id="map" style="height: 300px; width: 100%; margin-top: 10px;"></div>
+            {{ form.latitude }}
+            {{ form.longitude }}
+        </div>
+        
+        <div class="mb-3 form-check">
+            {{ form.is_public }}
+            <label class="form-check-label" for="{{ form.is_public.id_for_label }}">
+                Make this review public
+            </label>
+        </div>
+        
+        <button type="submit" class="btn btn-primary">
+            {% if form.instance.pk %}Update{% else %}Submit{% endif %} Review
+        </button>
+        <a href="{% url 'reviews:list' %}" class="btn btn-secondary">Cancel</a>
+    </form>
+</div>
+
+<script>
+    // Update rating display when slider changes
+    document.getElementById('ratingSlider').addEventListener('input', function() {
+        document.getElementById('ratingValue').textContent = this.value;
+    });
+    
+    // Initialize Google Maps
+    function initMap() {
+        const map = new google.maps.Map(document.getElementById("map"), {
+            center: { lat: 0, lng: 0 },
+            zoom: 2,
+        });
+        
+        let marker;
+        
+        // Add click listener to map
+        map.addListener("click", (e) => {
+            if (marker) {
+                marker.setMap(null);
+            }
+            
+            marker = new google.maps.Marker({
+                position: e.latLng,
+                map: map,
+            });
+            
+            document.getElementById("id_latitude").value = e.latLng.lat();
+            document.getElementById("id_longitude").value = e.latLng.lng();
+            
+            // Reverse geocode to get location name
+            const geocoder = new google.maps.Geocoder();
+            geocoder.geocode({ location: e.latLng }, (results, status) => {
+                if (status === "OK" && results[0]) {
+                    document.getElementById("locationInput").value = results[0].formatted_address;
+                }
+            });
+        });
+        
+        // If editing, show existing location
+        {% if form.instance.latitude and form.instance.longitude %}
+            const initialPos = {
+                lat: {{ form.instance.latitude }},
+                lng: {{ form.instance.longitude }}
+            };
+            
+            map.setCenter(initialPos);
+            map.setZoom(15);
+            
+            marker = new google.maps.Marker({
+                position: initialPos,
+                map: map,
+            });
+        {% endif %}
+    }
+    
+    window.initMap = initMap;
+</script>
+
+<script src="https://maps.googleapis.com/maps/api/js?key={{ google_maps_api_key }}&callback=initMap&libraries=places" async defer></script>
+{% endblock %}

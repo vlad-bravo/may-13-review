@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% load humanize %}
+
+{% block content %}
+<h1>Аналитика отзывов</h1>
+
+<div class="stats">
+    <div class="stat-card">
+        <h3>Всего отзывов</h3>
+        <p>{{ stats.total|intcomma }}</p>
+    </div>
+    <div class="stat-card positive">
+        <h3>Положительные</h3>
+        <p>{{ stats.positive|intcomma }} ({{ stats.positive_percent|floatformat:1 }}%)</p>
+    </div>
+    <div class="stat-card negative">
+        <h3>Отрицательные</h3>
+        <p>{{ stats.negative|intcomma }} ({{ stats.negative_percent|floatformat:1 }}%)</p>
+    </div>
+</div>
+
+<div class="chart">
+    {{ chart|safe }}
+</div>
+
+<div id="map" style="height: 400px; width: 100%; margin-top: 30px;"></div>
+
+<script>
+    function initMap() {
+        // Пример: показываем карту с метками для отзывов
+        const map = new google.maps.Map(document.getElementById("map"), {
+            zoom: 10,
+            center: {lat: 55.7558, lng: 37.6173}, // Москва по умолчанию
+        });
+        
+        // Здесь можно добавить логику для отображения меток отзывов
+        // Например:
+        {% for review in user.reviews.all %}
+            new google.maps.Marker({
+                position: {lat: {{ review.latitude }}, lng: {{ review.longitude }}},
+                map: map,
+                title: "{{ review.sentiment }} отзыв",
+            });
+        {% endfor %}
+    }
+    google.maps.event.addDomListener(window, 'load', initMap);
+</script>
+{% endblock %}

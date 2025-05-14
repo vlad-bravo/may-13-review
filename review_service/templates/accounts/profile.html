@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Профиль пользователя</h1>
+
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Обновить профиль</button>
+</form>
+
+<h2>Подключение Telegram</h2>
+{% if request.user.telegram_chat_id %}
+    <p>Telegram подключен ✅</p>
+{% else %}
+    <form method="post" action="{% url 'profile' %}">
+        {% csrf_token %}
+        {{ telegram_form.as_p }}
+        <button type="submit" name="connect_telegram">Подключить Telegram</button>
+    </form>
+    <p>Или <a href="{% url 'get_telegram_code' %}">получить код подтверждения</a></p>
+{% endif %}
+{% endblock %}
