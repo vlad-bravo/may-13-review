@@ -4,3 +4,4 @@ pandas
 django-plotly-dash
 celery
 googlemaps
+faker
